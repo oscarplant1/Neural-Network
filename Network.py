@@ -18,7 +18,7 @@ class Network:
         for i in range(len(self.nodesPerLayer)-1):
             self.layers.append(Layer.Layer(nodesPerLayer[i],nodesPerLayer[i+1]))
     
-    # Using cross-entropy loss for the cost function of the network - not used yet
+    # Using cross-entropy loss for the cost function of the network - not used 
     def costFunction(self,inputs,expectedResults):
         # Add small epsilon to avoid log(0)
         epsilon = 1e-12
@@ -74,27 +74,75 @@ class Network:
         for layer in self.layers:
             layer.updateParams(learning_rate)
     
-    # Forward pass the input data -> Backward pass the output of the forward pass -> adjust parameters
-    # Repeat for the number of iterations 
-    def trainNetwork(self,input_data,expected_values,learn_rate,batch_size,epochs):
+    # Shuffle data -> divide data into batches of input size -> (forward pass -> backward pass -> update parameters) for each batch -> Repeat for the input number of epochs 
+    def trainNetwork(self,training_data,training_expected_values,learn_rate,batch_size,epochs,plot_accuracy = False,test_data = 0,test_expected_values = 0):
 
         original_batch_size = batch_size
+
+        training_accuracies = []
+        test_accuracies = []
 
         for i in range(epochs):
             batch_size = original_batch_size
 
-            shuffled_indices = np.random.permutation(input_data.shape[1])
-            input_data = input_data[:,shuffled_indices]
-            expected_values= expected_values[:,shuffled_indices]
+            shuffled_indices = np.random.permutation(training_data.shape[1])
+            training_data = training_data[:,shuffled_indices]
+            training_expected_values= training_expected_values[:,shuffled_indices]
 
-            for j in range(0,input_data.shape[1],batch_size):
-                if j + batch_size > input_data.shape[1]:
-                    batch_size = input_data.shape[1]
+            # Calculate and plot live accuracy for both training and test data
+            if plot_accuracy:
+                current_training_predictions = self.forwardPass(training_data)
+                accuracy = self.computeAccuracy(current_training_predictions,training_expected_values)
+                training_accuracies.append(accuracy*100)
+                current_test_predictions = self.forwardPass(test_data)
+                accuracy = self.computeAccuracy(current_test_predictions,test_expected_values)
+                test_accuracies.append(accuracy*100)
 
-                forward_pass_outputs = self.forwardPass(input_data[:,i:i+batch_size])
-                self.backwardPass(forward_pass_outputs,expected_values[:,i:i+batch_size])
+                plt.cla()
+                plt.plot(range(i+1),training_accuracies,"r-",label= "Training data")
+                plt.plot(range(i+1),test_accuracies,"b-", label="Test data")
+                plt.xlabel("Epoch")
+                plt.ylabel("Accuracy %")
+                plt.legend(loc="lower right")
+                plt.axis([0,epochs-1,0,100])
+                plt.xticks(np.arange(0,epochs+1,5))
+                plt.yticks(np.arange(0,101,5))
+                plt.grid()
+                plt.pause(0.05)
+
+            # Training network
+            for j in range(0,training_data.shape[1],batch_size):
+                # Last batch may be bigger than the rest in order to cover all of the dataset
+                if j + batch_size > training_data.shape[1]:
+                    batch_size = training_data.shape[1] - j 
+
+                forward_pass_outputs = self.forwardPass(training_data[:,j:j+batch_size])
+                self.backwardPass(forward_pass_outputs,training_expected_values[:,j:j+batch_size])
                 self.updateParams(learn_rate)
-    
+
+        # Plot the accuracy after the final epoch
+        if plot_accuracy:
+            final_training_predictions = self.forwardPass(training_data)
+            final_training_accuracy = self.computeAccuracy(final_training_predictions, training_expected_values) * 100
+            training_accuracies.append(final_training_accuracy)
+            final_test_predictions = self.forwardPass(test_data)
+            final_test_accuracy = self.computeAccuracy(final_test_predictions, test_expected_values) * 100
+            test_accuracies.append(final_test_accuracy)
+
+            plt.cla()
+            plt.plot(range(epochs+1), training_accuracies, "r-", label="Training data")
+            plt.plot(range(epochs+1), test_accuracies, "b-", label="Test data")
+            plt.xlabel("Epoch")
+            plt.ylabel("Accuracy %")
+            plt.legend(loc="lower right")
+            plt.axis([0,epochs,0,100])
+            plt.xticks(np.arange(0,epochs+1,5))
+            plt.yticks(np.arange(0,101,5))
+            plt.grid()
+            plt.show()
+
+            print(training_accuracies[-1],test_accuracies[-1])
+
     # Test a single image (takes the first image of all passed images), draw it and forward pass it throught the network
     def testInput(self,input_data):
         input_data = input_data[:,[0]]
@@ -107,13 +155,9 @@ class Network:
         output_data = self.forwardPass(input_data)
         return output_data
     
-    def testAccuarcy(self,test_data,expected_values):
-        correct_guesses = 0
-        for i in range(test_data.shape[1]):
-            if np.argmax(self.forwardPass(test_data[:,[i]])) == np.argmax(expected_values[:,i]):
-                correct_guesses += 1
-        if correct_guesses > 0:
-            accuracy = correct_guesses / test_data.shape[1]
-            return accuracy
-        else:
-            return 0
+    def computeAccuracy(self, predictions, expected_values):
+        predicted = np.argmax(predictions, axis=0)
+        correct = np.argmax(expected_values, axis=0)
+        accuracy = np.mean(predicted == correct)
+        return accuracy
+    
