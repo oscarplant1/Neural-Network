@@ -1,3 +1,4 @@
+import math
 import numpy as np 
 import scipy as sp 
 import pandas as pd
@@ -75,11 +76,24 @@ class Network:
     
     # Forward pass the input data -> Backward pass the output of the forward pass -> adjust parameters
     # Repeat for the number of iterations 
-    def trainNetwork(self,input_data,expected_values,iterations,learn_rate):
-        for i in range(iterations):
-            forward_pass_outputs = self.forwardPass(input_data)
-            self.backwardPass(forward_pass_outputs,expected_values)
-            self.updateParams(learn_rate)
+    def trainNetwork(self,input_data,expected_values,learn_rate,batch_size,epochs):
+
+        original_batch_size = batch_size
+
+        for i in range(epochs):
+            batch_size = original_batch_size
+
+            shuffled_indices = np.random.permutation(input_data.shape[1])
+            input_data = input_data[:,shuffled_indices]
+            expected_values= expected_values[:,shuffled_indices]
+
+            for j in range(0,input_data.shape[1],batch_size):
+                if j + batch_size > input_data.shape[1]:
+                    batch_size = input_data.shape[1]
+
+                forward_pass_outputs = self.forwardPass(input_data[:,i:i+batch_size])
+                self.backwardPass(forward_pass_outputs,expected_values[:,i:i+batch_size])
+                self.updateParams(learn_rate)
     
     # Test a single image (takes the first image of all passed images), draw it and forward pass it throught the network
     def testInput(self,input_data):

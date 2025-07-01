@@ -1,4 +1,5 @@
 #%%
+import math
 import numpy as np 
 import scipy as sp 
 import pandas as pd
@@ -46,7 +47,7 @@ Y_train = one_hot(Y_train,10)
 np.set_printoptions(suppress=True)
 
 Neural_Network = Network.Network([784,300,100,10])
-Neural_Network.trainNetwork(X_train,Y_train,50,0.3)
+Neural_Network.trainNetwork(X_train,Y_train,0.3,500,50)
 print("Accuracy: " + str(Neural_Network.testAccuarcy(X_test,Y_test)))
 print(Neural_Network.testInput(X_test)*100)
 # %%
