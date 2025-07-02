@@ -7,6 +7,8 @@ import csv
 from matplotlib import pyplot as plt
 import Layer
 
+np.set_printoptions(suppress=True)
+
 # Neural class using ReLU as the hidden layer activation function, softmax as the final layer activation function and categorical cross entropy loss as the cost/loss function
 
 class Network:
@@ -119,6 +121,9 @@ class Network:
                 forward_pass_outputs = self.forwardPass(training_data[:,j:j+batch_size])
                 self.backwardPass(forward_pass_outputs,training_expected_values[:,j:j+batch_size])
                 self.updateParams(learn_rate)
+
+            # Decay the learning rate with every epoch
+            learn_rate = learn_rate - 0.001
 
         # Plot the accuracy after the final epoch
         if plot_accuracy:

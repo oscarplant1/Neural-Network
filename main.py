@@ -46,6 +46,7 @@ Y_train = one_hot(Y_train,10)
 
 np.set_printoptions(suppress=True)
 
+# This configuration gives an accuarcy of 97.2% on the test data 
 Neural_Network = Network.Network([784,400,100,10])
-Neural_Network.trainNetwork(X_train,Y_train,0.015,64,50,True,X_test,Y_test)
+Neural_Network.trainNetwork(X_train,Y_train,0.1,32,50,True,X_test,Y_test)
 # %%
