@@ -1,15 +1,10 @@
-import math
 import numpy as np 
-import scipy as sp 
-import pandas as pd
-import random
-import csv
 from matplotlib import pyplot as plt
 import Layer
 
 np.set_printoptions(suppress=True)
 
-# Neural class using ReLU as the hidden layer activation function, softmax as the final layer activation function and categorical cross entropy loss as the cost/loss function
+# Neural Netowrk class using ReLU as the hidden layer activation function, softmax as the final layer activation function and categorical cross entropy loss as the cost/loss function
 
 class Network:
     def __init__(self, nodesPerLayer):
@@ -20,7 +15,7 @@ class Network:
         for i in range(len(self.nodesPerLayer)-1):
             self.layers.append(Layer.Layer(nodesPerLayer[i],nodesPerLayer[i+1]))
     
-    # Using cross-entropy loss for the cost function of the network - not used 
+    # Using cross-entropy loss for the cost function of the network - not used in current implementation
     def costFunction(self,inputs,expectedResults):
         # Add small epsilon to avoid log(0)
         epsilon = 1e-12
@@ -72,7 +67,7 @@ class Network:
         return
     
     def updateParams(self,learning_rate):
-        # Adjust all weights and biases at the given learning_rate
+        # Adjust all weights and biases at the given learning rate
         for layer in self.layers:
             layer.updateParams(learning_rate)
     
@@ -148,7 +143,7 @@ class Network:
 
             print(training_accuracies[-1],test_accuracies[-1])
 
-    # Test a single image (takes the first image of all passed images), draw it and forward pass it throught the network
+    # Test a single image (takes the first image of all input images), draw it and forward pass it throught the network
     def testInput(self,input_data):
         input_data = input_data[:,[0]]
 
@@ -160,6 +155,7 @@ class Network:
         output_data = self.forwardPass(input_data)
         return output_data
     
+    # Compare the predictions made by the network to the correct values and return the accuracy
     def computeAccuracy(self, predictions, expected_values):
         predicted = np.argmax(predictions, axis=0)
         correct = np.argmax(expected_values, axis=0)

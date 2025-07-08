@@ -1,10 +1,5 @@
 #%%
-import math
 import numpy as np 
-import scipy as sp 
-import pandas as pd
-import random
-import csv
 from matplotlib import pyplot as plt
 
 class Layer:
@@ -18,7 +13,7 @@ class Layer:
         self.weightsIn = np.random.rand(nodeCount,nodeInputCount) - 0.5
         self.biasesIn = np.random.rand(nodeCount,1) - 0.5
 
-        #Intialise Weights gradients matrix and biases vector to zeros
+        #Intialise Weight gradients matrix and bias gradients vector to zeros
         self.dCdW = np.zeros([nodeCount,nodeInputCount])
         self.dCdb = np.zeros([nodeCount,1])
 
